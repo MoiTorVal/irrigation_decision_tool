@@ -17,10 +17,3 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
-if __name__ == "__main__":
-    try:
-        with engine.connect() as connection:
-            print("Database connection successful")
-    except Exception as e:
-        print(f"Error connecting to the database: {e}")
