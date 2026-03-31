@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Numeric, DateTime
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, Date
 from sqlalchemy import ForeignKey
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 from backend.database import Base
 
 default=lambda: datetime.now(timezone.utc)
@@ -42,7 +42,7 @@ class Farm(Base):
     soil_type = Column(String(100))
     root_depth_cm = Column(Numeric(5, 2))
     growth_stage = Column(String(50))
-    planting_date = Column(date)
+    planting_date = Column(Date)
     field_capacity_pct = Column(Numeric(5, 2))
     wilting_point_pct = Column(Numeric(5, 2))
 
