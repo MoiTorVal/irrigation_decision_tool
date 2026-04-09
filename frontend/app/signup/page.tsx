@@ -5,17 +5,22 @@ import Link from "next/link";
 import Input from "../components/Input";
 
 interface FormFields {
+  name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface FormErrors {
+  name?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
 }
 
 function validate(fields: FormFields): FormErrors {
   const errors: FormErrors = {};
+  if (!fields.name.trim()) errors.name = "Name is required";
   if (!fields.email.trim()) {
     errors.email = "Email is required";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
@@ -26,13 +31,20 @@ function validate(fields: FormFields): FormErrors {
   } else if (fields.password.length < 6) {
     errors.password = "Password must be at least 6 characters";
   }
+  if (!fields.confirmPassword.trim()) {
+    errors.confirmPassword = "Please confirm your password";
+  } else if (fields.password !== fields.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match";
+  }
   return errors;
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [fields, setFields] = useState<FormFields>({
+    name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
@@ -68,9 +80,7 @@ export default function LoginPage() {
             >
               WaterStress
             </Link>
-            <p className="text-[#8A8F98] text-sm mt-1">
-              Sign in to your account
-            </p>
+            <p className="text-[#8A8F98] text-sm mt-1">Create your account</p>
           </div>
 
           <form
@@ -78,6 +88,15 @@ export default function LoginPage() {
             noValidate
             className="flex flex-col gap-5"
           >
+            <Input
+              label="Name"
+              name="name"
+              value={fields.name}
+              onChange={handleChange}
+              placeholder="John Smith"
+              error={errors.name}
+            />
+
             <Input
               label="Email"
               name="email"
@@ -98,11 +117,21 @@ export default function LoginPage() {
               error={errors.password}
             />
 
+            <Input
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={fields.confirmPassword}
+              onChange={handleChange}
+              placeholder="••••••••"
+              error={errors.confirmPassword}
+            />
+
             <button
               type="submit"
               disabled={loading}
               className="bg-[#E6E6E6] hover:bg-white disabled:opacity-50 text-[#08090A] font-semibold py-3
-rounded-lg transition-colors mt-2"
+  rounded-lg transition-colors mt-2"
             >
               {loading ? (
                 <svg
@@ -126,28 +155,19 @@ rounded-lg transition-colors mt-2"
                   />
                 </svg>
               ) : (
-                "Log In"
+                "Create Account"
               )}
             </button>
           </form>
-
-          <div className="text-center mt-6">
-            <Link
-              href="/forgot-password"
-              className="text-[#E6E6E6] hover:text-white hover:underline text-sm"
-            >
-              Forgot password?
-            </Link>
-          </div>
         </div>
 
         <p className="text-center text-sm text-[#8A8F98] mt-6">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="text-[#E6E6E6] hover:text-white hover:underline font-medium"
           >
-            Create Account
+            Log In
           </Link>
         </p>
       </div>
