@@ -1,10 +1,9 @@
-import { Droplets, Cloud, TrendingUp, Bell } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, Droplets, Cloud, TrendingUp, Bell } from "lucide-react";
 
 export default function Features() {
   const features: { title: string; description: string; icon: LucideIcon }[] = [
     {
-      title: "So[il Monitoring",
+      title: "Soil Monitoring",
       description:
         "Track soil moisture levels across all your fields in real time with sensor-driven data.",
       icon: Droplets,
@@ -30,26 +29,26 @@ export default function Features() {
   ];
 
   return (
-    <section className="bg-zinc-950 py-24 px-8">
+    <section className="bg-[#0a0a0a] py-24 px-8 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
-        <p className="text-amber-400 text-sm font-semibold tracking-widest uppercase mb-4">
+        <p className="text-[#8A8F98] text-sm font-medium tracking-widest uppercase mb-4">
           What We Offer
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-16 max-w-2xl">
+        <h2 className="text-3xl md:text-4xl font-semibold text-[#F7F8F8] mb-16 max-w-2xl">
           Everything you need to stay ahead of water stress
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6"
+              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/[0.07] transition-colors"
             >
-              <span className="text-3xl">{<feature.icon />}</span>
-              <h3 className="text-white font-semibold text-lg mt-4 mb-2">
+              <feature.icon size={24} className="text-[#F7F8F8]" />
+              <h3 className="text-[#F7F8F8] font-semibold text-base mt-4 mb-2">
                 {feature.title}
               </h3>
-              <p className="text-white/60 text-sm leading-relaxed">
+              <p className="text-[#8A8F98] text-sm leading-relaxed">
                 {feature.description}
               </p>
             </div>

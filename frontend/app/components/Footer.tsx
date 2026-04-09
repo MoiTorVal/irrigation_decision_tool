@@ -1,16 +1,20 @@
 import Link from "next/link";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-950 border-t border-zinc-800">
+    <footer className="bg-[#0a0a0a] border-t border-white/10">
       <div className="max-w-7xl mx-auto px-8 py-16">
         <div className="flex flex-col md:flex-row justify-between gap-12">
           {/* Brand */}
           <div className="max-w-sm">
-            <Link href="/" className="text-white text-xl font-bold">
-              WaterStress
+            <Link href="/" className="flex items-center gap-1">
+              <Logo />
+              <span className="text-[#F7F8F8] text-lg font-semibold">
+                WaterStress
+              </span>
             </Link>
-            <p className="text-white/50 text-sm mt-4 leading-relaxed">
+            <p className="text-[#8A8F98] text-sm mt-4 leading-relaxed">
               Soil moisture monitoring and water stress predictions for
               agronomists and farmers.
             </p>
@@ -19,12 +23,14 @@ export default function Footer() {
           {/* Links */}
           <div className="flex gap-16">
             <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Product</h4>
+              <h4 className="text-[#F7F8F8] font-semibold text-sm mb-4">
+                Product
+              </h4>
               <ul className="flex flex-col gap-3">
                 <li>
                   <Link
                     href="/login"
-                    className="text-white/50 hover:text-amber-400 text-sm transition-colors"
+                    className="text-[#8A8F98] hover:text-white text-sm transition-colors"
                   >
                     Login
                   </Link>
@@ -32,7 +38,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/dashboard"
-                    className="text-white/50 hover:text-amber-400 text-sm transition-colors"
+                    className="text-[#8A8F98] hover:text-white text-sm transition-colors"
                   >
                     Dashboard
                   </Link>
@@ -40,12 +46,14 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
+              <h4 className="text-[#F7F8F8] font-semibold text-sm mb-4">
+                Company
+              </h4>
               <ul className="flex flex-col gap-3">
                 <li>
                   <Link
                     href="/contact"
-                    className="text-white/50 hover:text-amber-400 text-sm transition-colors"
+                    className="text-[#8A8F98] hover:text-white text-sm transition-colors"
                   >
                     Contact
                   </Link>
@@ -53,7 +61,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/privacy"
-                    className="text-white/50 hover:text-amber-400 text-sm transition-colors"
+                    className="text-[#8A8F98] hover:text-white text-sm transition-colors"
                   >
                     Privacy Policy
                   </Link>
@@ -61,7 +69,7 @@ export default function Footer() {
                 <li>
                   <Link
                     href="/terms"
-                    className="text-white/50 hover:text-amber-400 text-sm transition-colors"
+                    className="text-[#8A8F98] hover:text-white text-sm transition-colors"
                   >
                     Terms of Service
                   </Link>
@@ -72,7 +80,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-zinc-800 mt-12 pt-8 text-white/40 text-sm">
+
+        <div className="border-t border-white/10 mt-12 pt-8 text-[#8A8F98] text-sm">
           &copy; {new Date().getFullYear()} WaterStress. All rights reserved.
         </div>
       </div>

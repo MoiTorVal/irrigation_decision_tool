@@ -1,40 +1,73 @@
+"use client";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center">
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-zinc-900" />
+    <section className="relative min-h-screen flex items-center pt-24">
+      <div className="absolute inset-0 bg-[#0a0a0a]" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-8 w-full">
-        <p className="text-amber-400 text-sm font-semibold tracking-widest uppercase mb-4">
-          Water Stress Monitoring
-        </p>
-
-        <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight max-w-3xl">
-          Know when your crops need water before they stress
-        </h1>
-
-        <p className="text-white/70 text-lg mt-6 max-w-xl">
-          Get real-time soil moisture and weather data delivered to your device
-          so you can make smarter irrigation decisions.
-        </p>
-
-        <div className="flex gap-4 mt-10">
-          <Link
-            href="/login"
-            className="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold px-8 py-3 rounded-full transition-colors"
+      <div className="relative z-10 max-w-7xl mx-auto px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Left — text */}
+        <div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: "easeOut", delay: 0.3 }}
+            className="text-[#F7F8F8] text-3xl sm:text-5xl md:text-7xl font-bold leading-tight"
           >
-            Get Started
-          </Link>
-          <Link
-            href="/contact"
-            className="border border-white/30 hover:border-white text-white font-semibold px-8 py-3 rounded-full transition-colors"
+            Know when your crops need water before they stress
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.0, ease: "easeOut", delay: 0.6 }}
+            className="text-white/70 text-lg mt-6 max-w-xl"
           >
-            Learn More
-          </Link>
+            Get real-time soil moisture and weather data delivered to your
+            device so you can make smarter irrigation decisions.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: "easeOut", delay: 0.6 }}
+            className="flex gap-4 mt-10"
+          >
+            <Link
+              href="/login"
+              className="bg-[#E6E6E6] hover:bg-white text-[#08090A] font-semibold px-6 py-2 rounded-lg transition-colors text-sm"
+            >
+              Get Started
+            </Link>
+
+            {/* Secondary — ghost */}
+            <Link
+              href="/contact"
+              className="border border-white/20 hover:border-white/40 text-white/70 hover:text-white font-semibold px-6 py-2 rounded-lg transition-colors text-sm"
+            >
+              Learn More
+            </Link>
+          </motion.div>
         </div>
+
+        {/* Right — demo preview */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+        >
+          <div className="bg-white/5 border border-white/10 rounded-2xl aspect-[4/3] flex flex-col items-center justify-center gap-4">
+            <p className="text-[#8A8F98] text-sm">See it in action</p>
+            <Link
+              href="/demo"
+              className="bg-[#E6E6E6] hover:bg-white text-[#08090A] font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+            >
+              Try the Demo
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
