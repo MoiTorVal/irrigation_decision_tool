@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Water Stress Monitoring Dashboard",
-  description: "Irrigation decision tool for agronomists and farmers",
+  description:
+    "Water stress alerts and monitoring for efficient irrigation management",
 };
 
 export default function RootLayout({
