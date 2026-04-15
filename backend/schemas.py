@@ -18,11 +18,11 @@ class FarmBase(BaseModel):
 class FarmUpdate(FarmBase):
     pass
 class FarmCreate(FarmBase):
-    agronomist_id: int
+    pass
 
 class FarmResponse(FarmBase):
     id: int
-    agronomist_id: int
+    user_id: int
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
