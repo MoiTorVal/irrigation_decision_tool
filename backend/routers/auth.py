@@ -10,6 +10,9 @@ from backend.schemas import (
 )
 from backend.auth import hash_password, verify_password, create_access_token
 import logging
+import os
+
+SECURE_COOKIE = os.environ.get("SECURE_COOKIE", "true").lower() == "true"
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -39,7 +42,7 @@ def signup(body: SignupRequest, db: Session = Depends(get_db)):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False,
+        secure=SECURE_COOKIE,
         samesite="lax",
         max_age=60 * 60 * 24
     )
@@ -60,7 +63,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False,
+        secure=SECURE_COOKIE,
         samesite="lax",
         max_age=60 * 60 * 24
     )

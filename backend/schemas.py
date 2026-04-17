@@ -18,7 +18,7 @@ class FarmBase(BaseModel):
 class FarmUpdate(FarmBase):
     pass
 class FarmCreate(FarmBase):
-    pass
+    user_id: int
 
 class FarmResponse(FarmBase):
     id: int
