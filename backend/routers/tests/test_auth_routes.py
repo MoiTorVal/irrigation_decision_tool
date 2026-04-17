@@ -133,7 +133,8 @@ def test_forgot_password_same_response_for_known_and_unknown(client, existing_us
 
 
 def test_invalid_token_rejected(client):
-    response = client.get("/farms/", cookies={"access_token": "thisistotallynotavalidtoken"})
+    client.cookies.set("access_token", "thisistotallynotavalidtoken")
+    response = client.get("/farms/")
     assert response.status_code == 401
 
 
@@ -144,24 +145,28 @@ def test_missing_token_rejected(client):
 
 def test_expired_token_rejected(client):
     token = create_access_token({"sub": "1"}, expires_delta=timedelta(seconds=-1))
-    response = client.get("/farms/", cookies={"access_token": token})
+    client.cookies.set("access_token", token)
+    response = client.get("/farms/")
     assert response.status_code == 401
     assert response.json()["detail"] == "Token has expired"
 
 
 def test_token_missing_sub_rejected(client):
     token = jwt.encode({"exp": 9999999999}, SECRET_KEY, algorithm=ALGORITHM)
-    response = client.get("/farms/", cookies={"access_token": token})
+    client.cookies.set("access_token", token)
+    response = client.get("/farms/")
     assert response.status_code == 401
 
 
 def test_token_non_int_sub_rejected(client):
     token = create_access_token({"sub": "notanint"})
-    response = client.get("/farms/", cookies={"access_token": token})
+    client.cookies.set("access_token", token)
+    response = client.get("/farms/")
     assert response.status_code == 401
 
 
 def test_token_deleted_user_rejected(client):
     token = create_access_token({"sub": "99999"})
-    response = client.get("/farms/", cookies={"access_token": token})
+    client.cookies.set("access_token", token)
+    response = client.get("/farms/")
     assert response.status_code == 401
