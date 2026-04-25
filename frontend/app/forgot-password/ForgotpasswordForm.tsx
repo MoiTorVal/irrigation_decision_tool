@@ -21,7 +21,10 @@ export default function ForgotPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(ForgotPasswordFormSchema),
+    mode: "onBlur",
   });
+
+  
 
   async function onValid(values: ForgotPasswordFormValues) {
     setServerError(null);

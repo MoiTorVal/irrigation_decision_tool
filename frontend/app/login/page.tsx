@@ -19,6 +19,7 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(LoginFormSchema),
+    mode: "onBlur",
   });
 
   async function onValid(values: LoginFormValues) {
@@ -46,6 +47,7 @@ export default function LoginPage() {
               label="Email"
               type="email"
               placeholder="you@example.com"
+              autoComplete="email"
               error={errors.email?.message}
               {...register("email")}
             />
@@ -53,18 +55,19 @@ export default function LoginPage() {
               label="Password"
               type="password"
               placeholder="••••••••"
+              autoComplete="current-password"
               error={errors.password?.message}
               {...register("password")}
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#E6E6E6] hover:bg-white disabled:opacity-50 text-[#08090A] font-semibold py-3 rounded-lg"
+              className="bg-btn-secondary hover:bg-white disabled:opacity-50 text-btn-text font-semibold py-3 rounded-lg"
             >
               {isSubmitting ? <Spinner /> : "Log In"}
             </button>
             {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
+              <p role="alert" className="text-red-500 text-sm mt-2">{serverError}</p>
             )}
           </form>
         </div>
