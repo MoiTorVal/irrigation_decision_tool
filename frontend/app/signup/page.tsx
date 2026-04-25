@@ -20,6 +20,7 @@ export default function SignupPage() {
     formState: { errors, isSubmitting },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(SignupFormSchema),
+    mode: "onBlur",
   });
 
   async function onValid(values: SignupFormValues) {
@@ -60,6 +61,7 @@ export default function SignupPage() {
             <Input
               label="Name"
               placeholder="John Smith"
+              autoComplete="name"
               error={errors.name?.message}
               {...register("name")}
             />
@@ -67,6 +69,7 @@ export default function SignupPage() {
               label="Email"
               type="email"
               placeholder="you@example.com"
+              autoComplete="email"
               error={errors.email?.message}
               {...register("email")}
             />
@@ -74,6 +77,7 @@ export default function SignupPage() {
               label="Password"
               type="password"
               placeholder="••••••••"
+              autoComplete="new-password"
               error={errors.password?.message}
               {...register("password")}
             />
@@ -81,6 +85,7 @@ export default function SignupPage() {
               label="Confirm Password"
               type="password"
               placeholder="••••••••"
+              autoComplete="current-password"
               error={errors.confirmPassword?.message}
               {...register("confirmPassword")}
             />
@@ -93,7 +98,7 @@ export default function SignupPage() {
               {isSubmitting ? <Spinner /> : "Create Account"}
             </button>
             {serverError && (
-              <p className="text-red-500 text-sm mt-2">{serverError}</p>
+              <p role="alert" className="text-red-500 text-sm mt-2">{serverError}</p>
             )}
           </form>
         </div>
