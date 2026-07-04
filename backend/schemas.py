@@ -1,7 +1,7 @@
 import re
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
 from typing import Optional
 from datetime import datetime, date
 from geoalchemy2.elements import WKBElement
@@ -377,6 +377,19 @@ class RegionalStatsResponse(BaseModel):
     total_gallons_saved: Decimal
     total_kwh_saved: Decimal
     total_co2_kg_saved: Decimal
+    alerts_feedback_yes: int
+    alerts_feedback_no: int
     computed_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field
+    @property
+    def alert_precision_pct(self) -> float | None:
+        """Share of answered alerts confirmed accurate ('was this alert
+        right?' Y / Y+N). None until at least one farmer has answered —
+        an unmeasured model shouldn't display as 0% or 100%."""
+        answered = self.alerts_feedback_yes + self.alerts_feedback_no
+        if answered == 0:
+            return None
+        return round(100 * self.alerts_feedback_yes / answered, 1)

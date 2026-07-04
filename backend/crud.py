@@ -603,6 +603,18 @@ def upsert_regional_stats(db: Session, snapshot_date: date, values: dict) -> mod
     )
 
 
+def count_alert_feedback(db: Session) -> tuple[int, int]:
+    """Cumulative (yes, no) tallies across all alerts that got a Y/N reply."""
+    rows = (
+        db.query(models.Alert.feedback, func.count())
+        .filter(models.Alert.feedback.is_not(None))
+        .group_by(models.Alert.feedback)
+        .all()
+    )
+    counts = {feedback: n for feedback, n in rows}
+    return counts.get(AlertFeedback.YES, 0), counts.get(AlertFeedback.NO, 0)
+
+
 def get_latest_regional_stats(db: Session) -> models.RegionalStats | None:
     return (
         db.query(models.RegionalStats)

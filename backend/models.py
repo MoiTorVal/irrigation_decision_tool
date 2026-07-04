@@ -231,6 +231,10 @@ class RegionalStats(Base):
     total_gallons_saved: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     total_kwh_saved: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     total_co2_kg_saved: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    # Cumulative Y/N alert-feedback tallies — the measured precision of the
+    # severity model, not just its output.
+    alerts_feedback_yes: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    alerts_feedback_no: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 

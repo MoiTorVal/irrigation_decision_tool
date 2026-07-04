@@ -389,6 +389,7 @@ def run_regional_stats_job(db: Session | None = None, today: date | None = None)
     try:
         severity = crud.count_farms_by_severity(db)
         gallons, kwh, co2 = crud.sum_all_water_savings(db)
+        feedback_yes, feedback_no = crud.count_alert_feedback(db)
         total_farms = db.query(models.Farm).count()
         crud.upsert_regional_stats(db, snapshot_date=today, values={
             "total_farms": total_farms,
@@ -398,6 +399,8 @@ def run_regional_stats_job(db: Session | None = None, today: date | None = None)
             "total_gallons_saved": gallons,
             "total_kwh_saved": kwh,
             "total_co2_kg_saved": co2,
+            "alerts_feedback_yes": feedback_yes,
+            "alerts_feedback_no": feedback_no,
         })
         crud.finish_job_run(db, job_run, JobStatus.SUCCESS, processed=total_farms)
         return job_run
