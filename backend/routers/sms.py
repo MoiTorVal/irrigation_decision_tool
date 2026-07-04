@@ -9,6 +9,7 @@ import re
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from xml.sax.saxutils import escape
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
@@ -58,11 +59,19 @@ def _format_gallons(gallons: Decimal) -> str:
     return f"{gallons.normalize():f}"
 
 
+def _local_today() -> date:
+    """Twilio replies carry no timestamp and farmers text in farm-local time;
+    the server clock is UTC on Railway, so date.today() would file a 6pm PDT
+    reply under tomorrow. Resolve "today" in the configured farm timezone
+    (scheduler_timezone — same zone the nightly jobs treat as local)."""
+    return datetime.now(ZoneInfo(settings.scheduler_timezone)).date()
+
+
 def _log_irrigation(db: Session, user: models.User, gallons_text: str | None) -> str:
     farm = _resolve_farm(db, user)
     if farm is None:
         return sms_service.message(user.locale, "which_farm")
-    today = date.today()
+    today = _local_today()
     if gallons_text is not None:
         event = crud.create_irrigation_event(
             db, farm.id,
