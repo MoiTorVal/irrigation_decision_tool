@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 
 from backend import crud, models
-from backend.enums import IrrigationSource, JobStatus, StressSeverity
+from backend.enums import AlertFeedback, IrrigationSource, JobStatus, StressSeverity
 from backend.schemas import (
     AquaCropOutputBase,
     FarmCreate,
@@ -241,6 +241,34 @@ def test_regional_stats_job_aggregates(db, user):
     assert stats.total_gallons_saved == Decimal("3000.00")
 
 
+_ALERT_DAY = iter(range(1, 28))
+
+
+def _alert_with_feedback(db, farm_id, feedback):
+    # unique (farm, as_of_date, severity) — each test alert gets its own day
+    alert = crud.create_alert(
+        db, farm_id=farm_id, severity=StressSeverity.RED,
+        as_of_date=date(2026, 6, next(_ALERT_DAY)), days_to_stress=1,
+        provider_message_sid=None,
+    )
+    if feedback is not None:
+        crud.set_alert_feedback(db, alert, feedback)
+    return alert
+
+
+def test_regional_stats_job_counts_alert_feedback(db, user):
+    farm = _farm_with_severity(db, user.id, "F", StressSeverity.RED)
+    _alert_with_feedback(db, farm.id, AlertFeedback.YES)
+    _alert_with_feedback(db, farm.id, AlertFeedback.YES)
+    _alert_with_feedback(db, farm.id, AlertFeedback.NO)
+    # unanswered alerts must not count toward either tally
+    _alert_with_feedback(db, farm.id, None)
+
+    run_regional_stats_job(db=db, today=date(2026, 6, 9))
+    stats = crud.get_latest_regional_stats(db)
+    assert (stats.alerts_feedback_yes, stats.alerts_feedback_no) == (2, 1)
+
+
 def test_regional_stats_job_upsert_idempotent(db, user):
     _farm_with_severity(db, user.id, "G", StressSeverity.GREEN)
     run_regional_stats_job(db=db, today=date(2026, 6, 9))
@@ -258,10 +286,28 @@ def test_impact_stats_public_no_auth_required(unauthed_client, db, user):
     body = response.json()
     assert body["total_farms"] == 3
     assert body["farms_green"] == 3
+    # no feedback yet → precision is unmeasured, not 0% or 100%
+    assert body["alert_precision_pct"] is None
     # anonymization: aggregates only, nothing farm-identifiable or equity-related
     assert "results" not in body
     for forbidden in ("name", "is_socially_disadvantaged", "is_beginning_farmer"):
         assert forbidden not in body
+
+
+def test_impact_stats_reports_alert_precision(unauthed_client, db, user):
+    farms = [
+        _farm_with_severity(db, user.id, name, StressSeverity.GREEN)
+        for name in ("A", "B", "C")
+    ]
+    _alert_with_feedback(db, farms[0].id, AlertFeedback.YES)
+    _alert_with_feedback(db, farms[1].id, AlertFeedback.YES)
+    _alert_with_feedback(db, farms[2].id, AlertFeedback.NO)
+    run_regional_stats_job(db=db, today=date(2026, 6, 9))
+
+    body = unauthed_client.get("/impact/stats").json()
+    assert body["alerts_feedback_yes"] == 2
+    assert body["alerts_feedback_no"] == 1
+    assert body["alert_precision_pct"] == 66.7
 
 
 def test_impact_stats_suppressed_below_min_cohort(unauthed_client, db, user):
