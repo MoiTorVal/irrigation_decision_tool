@@ -26,6 +26,25 @@ def test_login_rate_limited_after_5(unauthed_client, rate_limited):
     assert statuses[5] == 429
 
 
+def test_refresh_rate_limited_after_5(unauthed_client, rate_limited):
+    # No refresh cookie → 401 each time, but the 6th must be throttled so
+    # the endpoint can't be hammered for token probing or reuse-revocation
+    # mischief any faster than the other auth writes.
+    statuses = [
+        unauthed_client.post("/auth/refresh").status_code for _ in range(6)
+    ]
+    assert statuses[:5] == [401] * 5
+    assert statuses[5] == 429
+
+
+def test_logout_rate_limited_after_5(unauthed_client, rate_limited):
+    statuses = [
+        unauthed_client.post("/auth/logout").status_code for _ in range(6)
+    ]
+    assert statuses[:5] == [200] * 5
+    assert statuses[5] == 429
+
+
 def test_limit_resets_between_tests(unauthed_client):
     # autouse fixture disabled the limiter again, so a burst is fine.
     statuses = [
