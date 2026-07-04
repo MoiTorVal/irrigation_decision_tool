@@ -5,6 +5,7 @@ import hmac
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from urllib.parse import parse_qs
+from zoneinfo import ZoneInfo
 
 import httpx
 import pytest
@@ -12,6 +13,7 @@ from pydantic import SecretStr
 
 from backend import crud, models
 from backend.config import settings
+from backend.routers import sms as sms_router
 from backend.enums import AlertFeedback, IrrigationSource, Locale, StressSeverity
 from backend.schemas import FarmCreate, IrrigationEventCreate
 from backend.services import sms_service
@@ -196,6 +198,27 @@ def _post_sms(client, body, from_number=FARMER_PHONE):
     return client.post("/sms/webhook", data=params, headers={"X-Twilio-Signature": _sign(params)})
 
 
+def _farm_today() -> date:
+    """Same resolution the webhook uses: 'today' in the farm timezone, not the
+    server's — keeps these assertions correct when CI runs in UTC after the
+    Pacific day has rolled over."""
+    return datetime.now(ZoneInfo(settings.scheduler_timezone)).date()
+
+
+def test_local_today_resolves_date_in_farm_timezone(monkeypatch):
+    class _FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            # 2026-07-05 03:30 UTC is still 2026-07-04 20:30 in America/Los_Angeles.
+            return datetime(2026, 7, 5, 3, 30, tzinfo=timezone.utc).astimezone(tz)
+
+    monkeypatch.setattr(sms_router, "datetime", _FixedDatetime)
+    monkeypatch.setattr(settings, "scheduler_timezone", "America/Los_Angeles")
+    assert sms_router._local_today() == date(2026, 7, 4)
+    monkeypatch.setattr(settings, "scheduler_timezone", "UTC")
+    assert sms_router._local_today() == date(2026, 7, 5)
+
+
 def test_webhook_unconfigured_returns_503(unauthed_client, twilio_unconfigured):
     assert _post_sms(unauthed_client, "1").status_code == 503
 
@@ -222,7 +245,7 @@ def test_webhook_logs_explicit_gallons(unauthed_client, db, twilio_configured, s
     (event,) = crud.get_irrigation_events_by_farm(db, farm_id=farm.id)
     assert event.gallons_applied == Decimal("5000.00")
     assert event.source == IrrigationSource.USER_LOG
-    assert event.event_date == date.today()
+    assert event.event_date == _farm_today()
 
 
 def test_webhook_bare_one_without_history_asks_for_gallons(unauthed_client, db, twilio_configured, sms_user, farm):
@@ -238,7 +261,7 @@ def test_webhook_bare_one_inherits_usual_gallons_as_estimated(unauthed_client, d
     response = _post_sms(unauthed_client, "1")
     assert "~2500 gal" in response.text
     events = crud.get_irrigation_events_by_farm(db, farm_id=farm.id)
-    today_event = next(e for e in events if e.event_date == date.today())
+    today_event = next(e for e in events if e.event_date == _farm_today())
     assert today_event.gallons_applied == Decimal("2500.00")
     assert today_event.source == IrrigationSource.ESTIMATED
 
