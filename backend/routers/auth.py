@@ -202,6 +202,7 @@ def reset_password(request: Request, body: ResetPasswordRequest, db: Session = D
 
 
 @router.post("/refresh", status_code=status.HTTP_200_OK)
+@limiter.limit(AUTH_WRITE_LIMIT)
 def refresh(
     request: Request,
     refresh_token: str | None = Cookie(default=None),
@@ -215,9 +216,12 @@ def refresh(
     if refresh_token is None:
         raise credentials_exception
 
+    # Row lock so two concurrent presentations of the same token serialize:
+    # the loser waits, then sees revoked_at set and trips reuse detection
+    # instead of silently minting a second session.
     row = db.query(models.RefreshToken).filter(
         models.RefreshToken.token_hash == hash_token(refresh_token)
-    ).first()
+    ).with_for_update().first()
     if row is None:
         raise credentials_exception
 
@@ -240,6 +244,7 @@ def refresh(
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
+@limiter.limit(AUTH_WRITE_LIMIT)
 def logout(
     request: Request,
     refresh_token: str | None = Cookie(default=None),
