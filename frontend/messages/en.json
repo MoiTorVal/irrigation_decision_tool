@@ -270,7 +270,9 @@
     "asOf": "As of {date}",
     "privacyNote": "Aggregated across all participating farms — no individual farm data is shown.",
     "comingSoonTitle": "Impact numbers coming soon",
-    "comingSoonBody": "We publish aggregate results once enough farms are participating to protect individual privacy."
+    "comingSoonBody": "We publish aggregate results once enough farms are participating to protect individual privacy.",
+    "precisionTitle": "Alert accuracy",
+    "precisionBody": "{yes} of {answered} farmers who replied to an alert text said their field did need water"
   },
   "press": {
     "title": "Impact & Press",
