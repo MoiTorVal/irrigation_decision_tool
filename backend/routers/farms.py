@@ -17,12 +17,13 @@ from backend.schemas import (
     SavingsSeriesResponse, SavingsTotals,
     ETReadingCreate, ETReadingResponse, ETSeriesResponse,
     AquaCropOutputRead, WaterStressResponse,
+    IrrigationRecommendationResponse,
 )
 from datetime import datetime, date, timedelta
 from backend.database import get_db
 from backend.dependencies import get_current_user
 from backend.models import User
-from backend.services import openet_client, sgma_export
+from backend.services import irrigation_advisor, openet_client, sgma_export
 from backend.services import scheduler as scheduler_service
 from backend.services.openet_client import ET_SOURCE, OpenETError, OpenETRateLimitError
 
@@ -227,6 +228,36 @@ def get_water_stress(
         et_latest_date=et_latest_date,
         et_latest_actual_date=crud.get_latest_et_date(db=db, farm_id=farm_id, source=ET_SOURCE),
         et_is_stale=scheduler_service.is_et_stale(et_latest_date),
+    )
+
+
+@router.get(
+    "/{farm_id}/irrigation-recommendation",
+    response_model=IrrigationRecommendationResponse,
+)
+def get_irrigation_recommendation(
+    farm_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Latest stress result translated into "apply this many gallons".
+    404 until the scheduler has produced a stress result (same contract as
+    /water-stress). The PostGIS polygon area is only computed when the
+    farmer hasn't entered an acreage."""
+    db_farm = _validate_farm_ownership(db=db, farm_id=farm_id, user_id=current_user.id)
+    output = crud.get_latest_aquacrop_output(db=db, farm_id=farm_id)
+    if output is None:
+        raise HTTPException(status_code=404, detail="No water-stress data available yet for this farm")
+    polygon_acres = (
+        None
+        if db_farm.acreage_acres is not None
+        else crud.get_farm_polygon_acres(db=db, farm_id=farm_id)
+    )
+    return irrigation_advisor.build_recommendation(
+        output=output,
+        farm=db_farm,
+        polygon_acres=polygon_acres,
+        pump_gpm=crud.get_latest_logged_pump_gpm(db=db, farm_id=farm_id),
     )
 
 

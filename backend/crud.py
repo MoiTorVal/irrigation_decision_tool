@@ -200,6 +200,39 @@ def get_latest_irrigation_event(db: Session, farm_id: int) -> models.IrrigationE
     )
 
 
+def get_latest_logged_pump_gpm(db: Session, farm_id: int) -> Decimal | None:
+    """Most recent runtime-mode log's GPM — the only flow-rate signal we have."""
+    row = (
+        db.query(models.IrrigationEvent.pump_gpm)
+        .filter(
+            models.IrrigationEvent.farm_id == farm_id,
+            models.IrrigationEvent.pump_gpm.isnot(None),
+        )
+        .order_by(
+            models.IrrigationEvent.event_date.desc(),
+            models.IrrigationEvent.logged_at.desc(),
+        )
+        .first()
+    )
+    return row[0] if row else None
+
+
+_SQM_PER_ACRE = Decimal("4046.8564224")
+
+
+def get_farm_polygon_acres(db: Session, farm_id: int) -> Decimal | None:
+    """Drawn-boundary area in acres. field_polygon is a Geography column, so
+    ST_Area returns square meters directly; null when no boundary is drawn."""
+    area_sqm = (
+        db.query(func.ST_Area(models.Farm.field_polygon))
+        .filter(models.Farm.id == farm_id, models.Farm.field_polygon.isnot(None))
+        .scalar()
+    )
+    if area_sqm is None:
+        return None
+    return (Decimal(str(area_sqm)) / _SQM_PER_ACRE).quantize(Decimal("0.01"))
+
+
 def _irrigation_events_base_query(db: Session, farm_id: int, start_date: date | None, end_date: date | None) -> Query:
     query = db.query(models.IrrigationEvent).filter(models.IrrigationEvent.farm_id == farm_id)
     if start_date:

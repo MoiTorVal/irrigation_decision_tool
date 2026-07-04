@@ -12,6 +12,7 @@ import {
   getEtSeries,
   getFarm,
   getIrrigationEvents,
+  getIrrigationRecommendation,
   getSatelliteScans,
   getWaterSavings,
   getWaterStress,
@@ -19,6 +20,7 @@ import {
   type Alert,
   type Farm,
   type IrrigationEvent,
+  type IrrigationRecommendation,
   type SatelliteScanSummary,
   type WaterSavingsRow,
   type WaterStress,
@@ -27,6 +29,7 @@ import { displayName, formatDate, isoAddDays } from "../../lib/format";
 import { AWC_IN_PER_FT, gallonsToAcreInches } from "../../lib/soil";
 import TrafficLightCard from "../../components/TrafficLightCard";
 import StressDetails from "../../components/StressDetails";
+import IrrigationRecommendationCard from "../../components/IrrigationRecommendationCard";
 import SavingsCard from "../../components/SavingsCard";
 import IrrigationLogSheet from "../../components/IrrigationLogSheet";
 import EditFarmSheet from "../../components/EditFarmSheet";
@@ -63,6 +66,7 @@ type LoadState =
       status: "ready";
       farm: Farm;
       stress: WaterStress | null;
+      recommendation: IrrigationRecommendation | null;
       savings: WaterSavingsRow[];
       hasBaseline: boolean;
       events: IrrigationEvent[];
@@ -121,10 +125,11 @@ function FarmDetailContent({ params }: { params: Promise<{ id: string }> }) {
         const scansPromise = getSatelliteScans(farmId).catch(
           () => [] as SatelliteScanSummary[],
         );
-        const [farm, stress, savings, baselines, events, alerts] =
+        const [farm, stress, recommendation, savings, baselines, events, alerts] =
           await Promise.all([
             getFarm(farmId),
             getWaterStress(farmId),
+            getIrrigationRecommendation(farmId),
             getWaterSavings(farmId),
             getBaselineIrrigations(farmId),
             getIrrigationEvents(farmId),
@@ -173,6 +178,7 @@ function FarmDetailContent({ params }: { params: Promise<{ id: string }> }) {
             status: "ready",
             farm,
             stress,
+            recommendation,
             savings,
             hasBaseline: baselines.length > 0,
             events,
@@ -226,6 +232,7 @@ function FarmDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const {
     farm,
     stress,
+    recommendation,
     savings,
     hasBaseline,
     events,
@@ -302,6 +309,13 @@ function FarmDetailContent({ params }: { params: Promise<{ id: string }> }) {
             {stress ? (
               <>
                 <TrafficLightCard stress={stress} />
+                {recommendation && (
+                  <IrrigationRecommendationCard
+                    rec={recommendation}
+                    onLogIrrigation={() => setLogOpen(true)}
+                    onAddAcreage={() => setEditOpen(true)}
+                  />
+                )}
                 <StressDetails stress={stress} farm={farm} />
               </>
             ) : (

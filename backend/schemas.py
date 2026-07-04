@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
-from typing import Optional
+from typing import Literal, Optional
 from datetime import datetime, date
 from geoalchemy2.elements import WKBElement
 from geoalchemy2.shape import to_shape
@@ -219,6 +219,27 @@ class WaterStressResponse(AquaCropOutputRead):
     et_latest_date: Optional[date] = None
     et_latest_actual_date: Optional[date] = None
     et_is_stale: bool
+
+
+class IrrigationRecommendationResponse(BaseModel):
+    """Latest stress result priced as an amount to apply.
+
+    recommended_gallons is the net root-zone refill (depletion × field
+    area) — it excludes application losses, and it is only set when the
+    field actually needs water (yellow/red). est_pump_hours divides by the
+    most recent farmer-logged pump GPM, so it inherits that log's accuracy.
+    """
+    farm_id: int
+    as_of_date: date
+    severity: StressSeverity | None
+    days_to_stress: int | None
+    depletion_mm: Decimal | None
+    irrigation_needed: bool
+    recommended_gallons: Decimal | None
+    acres_used: Decimal | None
+    acres_source: Literal["profile", "polygon"] | None
+    pump_gpm: Decimal | None
+    est_pump_hours: Decimal | None
 
 
 class IrrigationEventCreate(BaseModel):

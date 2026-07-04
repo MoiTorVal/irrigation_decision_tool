@@ -101,6 +101,24 @@ export const WaterStressSchema = z.object({
   et_is_stale: z.boolean(),
 });
 
+export const IrrigationRecommendationSchema = z.object({
+  farm_id: z.number(),
+  as_of_date: z.string(),
+  severity: StressSeveritySchema.nullable(),
+  days_to_stress: z.number().nullable(),
+  depletion_mm: z.coerce.number().nullable(),
+  irrigation_needed: z.boolean(),
+  recommended_gallons: z.coerce.number().nullable(),
+  acres_used: z.coerce.number().nullable(),
+  acres_source: z.enum(["profile", "polygon"]).nullable(),
+  pump_gpm: z.coerce.number().nullable(),
+  est_pump_hours: z.coerce.number().nullable(),
+});
+
+export type IrrigationRecommendation = z.infer<
+  typeof IrrigationRecommendationSchema
+>;
+
 export const WaterSavingsRowSchema = z.object({
   id: z.number(),
   farm_id: z.number(),
@@ -431,6 +449,21 @@ export async function getWaterStress(
 ): Promise<WaterStress | null> {
   try {
     return await request(WaterStressSchema, `/farms/${farmId}/water-stress`);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
+}
+
+/** Same 404-as-null contract as getWaterStress — both 404 until the first assessment. */
+export async function getIrrigationRecommendation(
+  farmId: number,
+): Promise<IrrigationRecommendation | null> {
+  try {
+    return await request(
+      IrrigationRecommendationSchema,
+      `/farms/${farmId}/irrigation-recommendation`,
+    );
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) return null;
     throw err;
