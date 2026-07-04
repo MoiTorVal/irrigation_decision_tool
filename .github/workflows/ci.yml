@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# CI only checks out and tests code; the default GITHUB_TOKEN write scopes
+# are unused attack surface.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
