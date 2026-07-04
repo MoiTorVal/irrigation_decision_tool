@@ -270,7 +270,9 @@
     "asOf": "Al {date}",
     "privacyNote": "Agregado entre todos los ranchos participantes — no se muestran datos de ranchos individuales.",
     "comingSoonTitle": "Números de impacto próximamente",
-    "comingSoonBody": "Publicamos resultados agregados cuando hay suficientes ranchos participando para proteger la privacidad individual."
+    "comingSoonBody": "Publicamos resultados agregados cuando hay suficientes ranchos participando para proteger la privacidad individual.",
+    "precisionTitle": "Precisión de las alertas",
+    "precisionBody": "{yes} de {answered} agricultores que respondieron a un mensaje de alerta dijeron que su campo sí necesitaba agua"
   },
   "press": {
     "title": "Impacto y Prensa",

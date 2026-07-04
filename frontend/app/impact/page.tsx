@@ -59,6 +59,31 @@ export default function ImpactPage() {
             </div>
           </section>
 
+          {stats.alert_precision_pct != null && (
+            <section className="mt-6 rounded-2xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold">{t("precisionTitle")}</h2>
+              <div className="mt-2 flex items-baseline gap-3">
+                <span
+                  data-testid="alert-precision"
+                  className="text-3xl font-bold text-green-700"
+                >
+                  {new Intl.NumberFormat(locale, {
+                    maximumFractionDigits: 1,
+                  }).format(stats.alert_precision_pct)}
+                  %
+                </span>
+                <span className="text-sm text-gray-600">
+                  {t("precisionBody", {
+                    yes: stats.alerts_feedback_yes ?? 0,
+                    answered:
+                      (stats.alerts_feedback_yes ?? 0) +
+                      (stats.alerts_feedback_no ?? 0),
+                  })}
+                </span>
+              </div>
+            </section>
+          )}
+
           <p className="mt-4 text-xs text-gray-500">
             {t("asOf", { date: stats.snapshot_date })} · {t("privacyNote")}
           </p>

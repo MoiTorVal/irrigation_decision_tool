@@ -495,6 +495,11 @@ export const ImpactStatsSchema = z.object({
   total_gallons_saved: z.coerce.number(),
   total_kwh_saved: z.coerce.number(),
   total_co2_kg_saved: z.coerce.number(),
+  // Optional: older backend deploys omit the alert-precision fields, and
+  // precision stays null until farmers have answered alert texts.
+  alerts_feedback_yes: z.number().optional(),
+  alerts_feedback_no: z.number().optional(),
+  alert_precision_pct: z.coerce.number().nullish(),
   computed_at: z.string(),
 });
 
