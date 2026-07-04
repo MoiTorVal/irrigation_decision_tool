@@ -311,5 +311,19 @@
     "locate": "Find my field",
     "locating": "Locating…",
     "locateError": "Couldn't get your location — zoom to your field manually."
+  },
+  "recommendation": {
+    "title": "Today's recommendation",
+    "applyHeadline": "Apply about {gallons} gal",
+    "refillsLine": "Refills {inches} in of root-zone depletion across {acres} ac",
+    "hoursLine": "≈ {hours} h at {gpm} GPM, from your last runtime log",
+    "netNote": "Net amount — add your system's usual losses.",
+    "polygonNote": "Field area estimated from your drawn boundary.",
+    "logCta": "Log irrigation",
+    "greenHeadline": "No irrigation needed right now",
+    "daysLine": "{days, plural, one {About # day of soil water left} other {About # days of soil water left}}",
+    "needAcresHeadline": "Refill about {inches} in of soil water",
+    "needAcresBody": "Add your field's acreage to get an amount in gallons.",
+    "addAcresCta": "Add acreage"
   }
 }

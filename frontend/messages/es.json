@@ -311,5 +311,19 @@
     "locate": "Buscar mi parcela",
     "locating": "Buscando…",
     "locateError": "No se pudo obtener su ubicación — acerque el mapa a su parcela manualmente."
+  },
+  "recommendation": {
+    "title": "Recomendación de hoy",
+    "applyHeadline": "Aplique aproximadamente {gallons} gal",
+    "refillsLine": "Repone {inches} pulg de agotamiento de la zona radicular en {acres} ac",
+    "hoursLine": "≈ {hours} h a {gpm} GPM, según su último registro de bomba",
+    "netNote": "Cantidad neta — agregue las pérdidas habituales de su sistema.",
+    "polygonNote": "Área del campo estimada según el límite dibujado.",
+    "logCta": "Registrar riego",
+    "greenHeadline": "No se necesita riego por ahora",
+    "daysLine": "{days, plural, one {Queda aproximadamente # día de agua en el suelo} other {Quedan aproximadamente # días de agua en el suelo}}",
+    "needAcresHeadline": "Reponga aproximadamente {inches} pulg de agua del suelo",
+    "needAcresBody": "Agregue la superficie de su campo para obtener la cantidad en galones.",
+    "addAcresCta": "Agregar superficie"
   }
 }
