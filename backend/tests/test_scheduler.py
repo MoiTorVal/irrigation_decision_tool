@@ -551,6 +551,18 @@ def test_alert_spanish_locale(db, sim_farm, fake_et, twilio_settings, sms_farmer
     assert "ROJO" in body
 
 
+def test_alert_includes_suggested_gallons(db, sim_farm, fake_et, twilio_settings, sms_farmer, sent_sms, monkeypatch):
+    sim_farm.acreage_acres = Decimal("10")
+    db.commit()
+    _force_sim_severity(monkeypatch, StressSeverity.RED, days_to_stress=2)
+
+    asyncio.run(run_et_sim_job(db=db, today=TODAY))
+
+    (_, body), = sent_sms
+    # 50 mm depletion × 10 ac × (27,154 gal/ac-in ÷ 25.4) = 534,527.6 → 534,528
+    assert "about 534,528 gal" in body
+
+
 def test_no_alert_when_severity_unchanged(db, sim_farm, fake_et, twilio_settings, sms_farmer, sent_sms, monkeypatch):
     _seed_severity(db, sim_farm.id, StressSeverity.RED, TODAY - timedelta(days=1))
     _force_sim_severity(monkeypatch, StressSeverity.RED)

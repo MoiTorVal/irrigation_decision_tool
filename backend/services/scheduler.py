@@ -21,7 +21,7 @@ from backend.config import settings
 from backend.database import SessionLocal
 from backend.enums import JobStatus, StressSeverity
 from backend.schemas import ETReadingCreate, WaterSavingsBase
-from backend.services import cimis_client, openet_client, rainfall_client, savings_calculator, sentinel_client, sms_service
+from backend.services import cimis_client, irrigation_advisor, openet_client, rainfall_client, savings_calculator, sentinel_client, sms_service
 from backend.services.aquacrop_runner import AquaCropInputError, compute_and_cache_water_stress
 from backend.services.cimis_client import CimisError
 from backend.services.openet_client import ET_SOURCE, OpenETError, OpenETRateLimitError
@@ -187,8 +187,24 @@ async def _maybe_send_stress_alert(db: Session, farm: models.Farm, output: model
         return False
     if crud.get_alert(db, farm.id, output.as_of_date, output.severity) is not None:
         return False
+    # Same math as GET /irrigation-recommendation, so the text and the app
+    # never disagree. Pump hours are left out — SMS stays short.
+    recommendation = irrigation_advisor.build_recommendation(
+        output=output,
+        farm=farm,
+        polygon_acres=(
+            None if farm.acreage_acres is not None
+            else crud.get_farm_polygon_acres(db, farm.id)
+        ),
+        pump_gpm=None,
+    )
     body = sms_service.stress_alert_body(
-        user.locale, farm.name, output.severity, output.as_of_date, output.days_to_stress
+        user.locale, farm.name, output.severity, output.as_of_date, output.days_to_stress,
+        recommended_gallons=(
+            int(recommendation.recommended_gallons)
+            if recommendation.recommended_gallons is not None
+            else None
+        ),
     )
     sid = await sms_service.send_sms(user.phone_number, body)
     crud.create_alert(

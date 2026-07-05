@@ -182,6 +182,33 @@ def test_stress_alert_body_omits_days_when_zero_or_none():
     assert "days to crop stress" not in unknown
 
 
+def test_stress_alert_body_includes_suggested_gallons():
+    body = stress_alert_body(
+        Locale.EN, "F", StressSeverity.RED, date(2026, 6, 9), 2,
+        recommended_gallons=534528,
+    )
+    assert "about 534,528 gal to refill the root zone" in body
+    # the amount reads before the reply instructions
+    assert body.index("534,528") < body.index("Reply 1")
+
+
+def test_stress_alert_body_es_suggested_gallons():
+    body = stress_alert_body(
+        Locale.ES, "Campo Sur", StressSeverity.YELLOW, date(2026, 6, 9), 5,
+        recommended_gallons=1000,
+    )
+    assert "unos 1,000 gal para reponer la zona radicular" in body
+
+
+def test_stress_alert_body_omits_gallons_when_none_or_zero():
+    without = stress_alert_body(Locale.EN, "F", StressSeverity.RED, date(2026, 6, 9), 2)
+    zero = stress_alert_body(
+        Locale.EN, "F", StressSeverity.RED, date(2026, 6, 9), 2, recommended_gallons=0
+    )
+    assert "refill the root zone" not in without
+    assert "refill the root zone" not in zero
+
+
 # ── webhook ──────────────────────────────────────────────────────────────────
 
 

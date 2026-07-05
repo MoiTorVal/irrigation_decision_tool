@@ -103,6 +103,7 @@ _MESSAGES = {
     Locale.EN: {
         "alert": "AquaAlert: {farm} is at {severity} water stress (as of {as_of}).",
         "alert_days": " ~{days} days to crop stress at the current pace.",
+        "alert_gallons": " Suggested: about {gallons} gal to refill the root zone.",
         "alert_actions": " Reply 1 after you irrigate (or '1 5000' = gallons). Reply Y/N: does the crop look stressed?",
         "logged": "Logged {gallons} gal for {farm} on {event_date}. Thanks!",
         "logged_estimated": "Logged ~{gallons} gal (your usual amount) for {farm} on {event_date}. Reply '1 5000' next time to set exact gallons.",
@@ -115,6 +116,7 @@ _MESSAGES = {
     Locale.ES: {
         "alert": "AquaAlert: {farm} está en estrés hídrico {severity} (al {as_of}).",
         "alert_days": " ~{days} días hasta estrés del cultivo al ritmo actual.",
+        "alert_gallons": " Sugerencia: unos {gallons} gal para reponer la zona radicular.",
         "alert_actions": " Responda 1 después de regar (o '1 5000' = galones). Responda S/N: ¿se ve estresado el cultivo?",
         "logged": "Registrado: {gallons} gal para {farm} el {event_date}. ¡Gracias!",
         "logged_estimated": "Registrado: ~{gallons} gal (su cantidad habitual) para {farm} el {event_date}. Responda '1 5000' la próxima vez para indicar galones exactos.",
@@ -137,6 +139,7 @@ def stress_alert_body(
     severity: StressSeverity,
     as_of: date,
     days_to_stress: int | None,
+    recommended_gallons: int | None = None,
 ) -> str:
     body = message(
         locale, "alert",
@@ -144,4 +147,6 @@ def stress_alert_body(
     )
     if days_to_stress is not None and days_to_stress > 0:
         body += message(locale, "alert_days", days=days_to_stress)
+    if recommended_gallons is not None and recommended_gallons > 0:
+        body += message(locale, "alert_gallons", gallons=f"{recommended_gallons:,}")
     return body + message(locale, "alert_actions")
