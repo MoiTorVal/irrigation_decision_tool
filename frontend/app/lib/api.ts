@@ -187,6 +187,8 @@ export const AlertSchema = z.object({
   sent_at: z.string(),
   feedback: z.enum(["yes", "no"]).nullable(),
   feedback_at: z.string().nullable(),
+  // Twilio delivery verdict; optional so older backends stay parseable.
+  delivery_status: z.string().nullish(),
 });
 
 export const PaginatedAlertsSchema = z.object({

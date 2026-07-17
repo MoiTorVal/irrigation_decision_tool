@@ -696,6 +696,21 @@ def set_alert_feedback(db: Session, alert: models.Alert, feedback: AlertFeedback
     return alert
 
 
+def update_alert_delivery_status(db: Session, message_sid: str, status: str) -> bool:
+    """False for unknown SIDs — status callbacks can outlive their alert row."""
+    alert = (
+        db.query(models.Alert)
+        .filter(models.Alert.provider_message_sid == message_sid)
+        .first()
+    )
+    if alert is None:
+        return False
+    alert.delivery_status = status
+    alert.delivery_status_at = func.now()
+    db.commit()
+    return True
+
+
 def get_alerts_by_farm(db: Session, farm_id: int, skip: int = 0, limit: int = 10) -> list[models.Alert]:
     return (
         db.query(models.Alert)

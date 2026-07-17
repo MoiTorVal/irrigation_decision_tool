@@ -108,6 +108,30 @@ def _handle_reply(db: Session, user: models.User, body: str) -> str:
     return sms_service.message(user.locale, "help")
 
 
+@router.post("/status", status_code=204)
+async def sms_status_callback(request: Request, db: Session = Depends(get_db)):
+    """Twilio message-status callback: records whether an alert actually
+    reached the phone. Same signature auth as the inbound webhook. Always
+    204 once the signature checks out — a 4xx would only make Twilio retry,
+    and an unknown SID has nothing to retry into."""
+    if not sms_service.is_configured() or settings.sms_status_callback_url is None:
+        raise HTTPException(status_code=503, detail="SMS is not configured")
+    form = await request.form()
+    params = {key: str(value) for key, value in form.items()}
+    signature = request.headers.get("X-Twilio-Signature", "")
+    if not sms_service.validate_signature(settings.sms_status_callback_url, params, signature):
+        logger.warning("Rejected SMS status callback with invalid signature")
+        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+
+    sid = params.get("MessageSid", "")
+    message_status = params.get("MessageStatus", "")
+    if sid and message_status:
+        # Column is String(20); Twilio statuses are all shorter, but never
+        # let a surprise value overflow the insert.
+        crud.update_alert_delivery_status(db, sid, message_status[:20])
+    return Response(status_code=204)
+
+
 @router.post("/webhook")
 async def sms_webhook(request: Request, db: Session = Depends(get_db)):
     if not sms_service.is_configured() or settings.sms_webhook_url is None:

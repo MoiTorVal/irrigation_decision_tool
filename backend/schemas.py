@@ -318,7 +318,8 @@ class SavingsSeriesResponse(BaseModel):
 
 
 class AlertResponse(BaseModel):
-    """Alert history row. provider_message_sid is internal — never exposed."""
+    """Alert history row. provider_message_sid is internal — never exposed;
+    delivery_status is the Twilio callback verdict (null = none received)."""
     id: int
     farm_id: int
     severity: StressSeverity
@@ -328,6 +329,7 @@ class AlertResponse(BaseModel):
     sent_at: datetime
     feedback: Optional[AlertFeedback] = None
     feedback_at: Optional[datetime] = None
+    delivery_status: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

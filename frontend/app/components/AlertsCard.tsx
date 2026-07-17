@@ -175,6 +175,12 @@ export default function AlertsCard({
                   )}
                 </span>
                 <span className="flex items-center gap-2">
+                  {(alert.delivery_status === "undelivered" ||
+                    alert.delivery_status === "failed") && (
+                    <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                      {t("notDelivered")}
+                    </span>
+                  )}
                   {alert.feedback != null && (
                     <span
                       className={`rounded px-2 py-0.5 text-xs ${

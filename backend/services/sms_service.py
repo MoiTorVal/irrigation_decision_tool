@@ -50,6 +50,8 @@ async def send_sms(to: str, body: str, transport: httpx.AsyncBaseTransport | Non
     path = f"/2010-04-01/Accounts/{settings.twilio_account_sid}/Messages.json"
     auth = (settings.twilio_account_sid, settings.twilio_auth_token.get_secret_value())
     data = {"To": to, "From": settings.twilio_from_number, "Body": body}
+    if settings.sms_status_callback_url is not None:
+        data["StatusCallback"] = settings.sms_status_callback_url
 
     last_error: SmsError | None = None
     for attempt in range(1, MAX_ATTEMPTS + 1):

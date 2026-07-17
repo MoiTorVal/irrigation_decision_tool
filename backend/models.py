@@ -262,6 +262,10 @@ class Alert(Base):
         SAEnum(AlertFeedback, name="alertfeedback", values_callable=_enum_values)
     )
     feedback_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Raw Twilio message status (queued/sent/delivered/undelivered/failed...)
+    # from the status callback; null = no callback received (or not enabled).
+    delivery_status: Mapped[str | None] = mapped_column(String(20))
+    delivery_status_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     __table_args__ = (
         # a crashed job re-run must not text the farmer twice

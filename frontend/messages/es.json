@@ -152,7 +152,8 @@
     "ndviMixed": "NDVI muestra señales mixtas de estrés (al {date})",
     "ndviNoSignal": "NDVI se veía saludable en el escaneo más reciente (al {date})",
     "feedbackYes": "Confirmado en campo",
-    "feedbackNo": "Se veía bien"
+    "feedbackNo": "Se veía bien",
+    "notDelivered": "Mensaje no entregado"
   },
   "trafficLight": {
     "healthy": "Saludable",

@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     # Exact public URL Twilio posts inbound SMS to (signature is computed
     # over it, so it must match the Twilio console verbatim).
     sms_webhook_url: str | None = None
+    # Exact public URL for Twilio delivery-status callbacks (same verbatim
+    # signature rule). Unset = outbound sends don't request callbacks.
+    sms_status_callback_url: str | None = None
     next_public_api_base_url: str
     allowed_origins: list[str] = ["http://localhost:3000"]
     # Used to build links sent (or, in dev, logged) to users.

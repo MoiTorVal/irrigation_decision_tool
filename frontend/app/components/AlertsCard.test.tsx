@@ -93,6 +93,19 @@ describe("AlertsCard", () => {
     expect(screen.getByText(/No alerts yet/)).toBeInTheDocument();
   });
 
+  it("flags alerts whose text never arrived", () => {
+    renderCard(baseUser, [{ ...alert, delivery_status: "undelivered" }]);
+    expect(screen.getByText("Text not delivered")).toBeInTheDocument();
+  });
+
+  it("shows no delivery flag for delivered or unreported texts", () => {
+    renderCard(baseUser, [
+      { ...alert, id: 9, delivery_status: "delivered" },
+      { ...alert, id: 10, as_of_date: "2026-06-07" },
+    ]);
+    expect(screen.queryByText("Text not delivered")).not.toBeInTheDocument();
+  });
+
   it("asks for a phone number before enabling SMS without one", async () => {
     const user = userEvent.setup();
     const setUser = renderCard(baseUser, []);

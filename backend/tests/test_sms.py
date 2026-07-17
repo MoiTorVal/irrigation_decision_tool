@@ -27,6 +27,7 @@ TWILIO_SID = "ACtest00000000000000000000000000"
 AUTH_TOKEN = "twilio-auth-token"
 FROM_NUMBER = "+15550006666"
 WEBHOOK_URL = "https://api.example.com/sms/webhook"
+STATUS_CALLBACK_URL = "https://api.example.com/sms/status"
 FARMER_PHONE = "+15551112222"
 
 
@@ -36,7 +37,13 @@ def twilio_configured(monkeypatch):
     monkeypatch.setattr(settings, "twilio_auth_token", SecretStr(AUTH_TOKEN))
     monkeypatch.setattr(settings, "twilio_from_number", FROM_NUMBER)
     monkeypatch.setattr(settings, "sms_webhook_url", WEBHOOK_URL)
+    monkeypatch.setattr(settings, "sms_status_callback_url", None)
     monkeypatch.setattr(sms_service, "RETRY_BASE_DELAY_S", 0)
+
+
+@pytest.fixture
+def status_callback_configured(twilio_configured, monkeypatch):
+    monkeypatch.setattr(settings, "sms_status_callback_url", STATUS_CALLBACK_URL)
 
 
 @pytest.fixture
@@ -46,6 +53,7 @@ def twilio_unconfigured(monkeypatch):
     monkeypatch.setattr(settings, "twilio_auth_token", None)
     monkeypatch.setattr(settings, "twilio_from_number", None)
     monkeypatch.setattr(settings, "sms_webhook_url", None)
+    monkeypatch.setattr(settings, "sms_status_callback_url", None)
 
 
 @pytest.fixture
@@ -394,3 +402,92 @@ def test_patch_me_duplicate_phone_400(client, db):
     response = client.patch("/auth/me", json={"phone_number": FARMER_PHONE})
     assert response.status_code == 400
     assert "already in use" in response.json()["detail"]
+
+
+# ── delivery-status callback ─────────────────────────────────────────────────
+
+
+def _sign_for(url: str, params: dict) -> str:
+    payload = url + "".join(k + v for k, v in sorted(params.items()))
+    digest = hmac.new(AUTH_TOKEN.encode(), payload.encode(), hashlib.sha1).digest()
+    return base64.b64encode(digest).decode()
+
+
+def _post_status(client, params):
+    return client.post(
+        "/sms/status", data=params,
+        headers={"X-Twilio-Signature": _sign_for(STATUS_CALLBACK_URL, params)},
+    )
+
+
+def _alert_with_sid(db, farm_id, sid="SMalert1"):
+    return crud.create_alert(
+        db, farm_id=farm_id, severity=StressSeverity.RED,
+        as_of_date=date(2026, 6, 9), days_to_stress=2, provider_message_sid=sid,
+    )
+
+
+def test_status_callback_records_delivery(unauthed_client, db, status_callback_configured, farm):
+    alert = _alert_with_sid(db, farm.id)
+    response = _post_status(
+        unauthed_client, {"MessageSid": "SMalert1", "MessageStatus": "delivered"}
+    )
+    assert response.status_code == 204
+    db.refresh(alert)
+    assert alert.delivery_status == "delivered"
+    assert alert.delivery_status_at is not None
+
+
+def test_status_callback_last_write_wins(unauthed_client, db, status_callback_configured, farm):
+    alert = _alert_with_sid(db, farm.id)
+    _post_status(unauthed_client, {"MessageSid": "SMalert1", "MessageStatus": "sent"})
+    _post_status(unauthed_client, {"MessageSid": "SMalert1", "MessageStatus": "undelivered"})
+    db.refresh(alert)
+    assert alert.delivery_status == "undelivered"
+
+
+def test_status_callback_unknown_sid_still_204(unauthed_client, status_callback_configured):
+    response = _post_status(
+        unauthed_client, {"MessageSid": "SMnobody", "MessageStatus": "delivered"}
+    )
+    assert response.status_code == 204
+
+
+def test_status_callback_invalid_signature_403(unauthed_client, db, status_callback_configured, farm):
+    alert = _alert_with_sid(db, farm.id)
+    response = unauthed_client.post(
+        "/sms/status",
+        data={"MessageSid": "SMalert1", "MessageStatus": "delivered"},
+        headers={"X-Twilio-Signature": "bogus"},
+    )
+    assert response.status_code == 403
+    db.refresh(alert)
+    assert alert.delivery_status is None
+
+
+def test_status_callback_503_without_callback_url(unauthed_client, twilio_configured):
+    # Twilio creds present but no status-callback URL configured — feature off
+    response = unauthed_client.post(
+        "/sms/status", data={"MessageSid": "SM1", "MessageStatus": "delivered"}
+    )
+    assert response.status_code == 503
+
+
+def test_send_sms_requests_status_callback_when_configured(status_callback_configured):
+    seen = {}
+
+    def handler(request):
+        seen["form"] = {k: v[0] for k, v in parse_qs(request.content.decode()).items()}
+        return httpx.Response(201, json={"sid": "SM123"})
+
+    _send(httpx.MockTransport(handler))
+    assert seen["form"]["StatusCallback"] == STATUS_CALLBACK_URL
+
+
+def test_alerts_endpoint_exposes_delivery_status_not_sid(client, db, farm):
+    _alert_with_sid(db, farm.id)
+    crud.update_alert_delivery_status(db, "SMalert1", "undelivered")
+
+    row = client.get(f"/farms/{farm.id}/alerts").json()["results"][0]
+    assert row["delivery_status"] == "undelivered"
+    assert "provider_message_sid" not in row
